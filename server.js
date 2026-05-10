@@ -1,14 +1,17 @@
 require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2/promise');
-const cors = require('cors'); // <--- ADD THIS LINE
+const cors = require('cors');
 
 const app = express();
-app.use(cors()); // <--- ADD THIS LINE (This allows anyone to fetch your data)
-app.use(express.json());
-// ... the rest of your code stays the same
 
-// Database connection pool using the same logic as your setup.js
+// THIS IS THE LINE THAT WAS MISSING:
+const port = process.env.PORT || 3000;
+
+app.use(cors()); 
+app.use(express.json());
+
+// Database connection pool
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -46,7 +49,7 @@ app.post('/addSchool', async (req, res) => {
     }
 });
 
-// RENDER FIX: Add '0.0.0.0' so the internet can find your server
+// Start the server
 app.listen(port, '0.0.0.0', () => {
     console.log(`🚀 API is live on port ${port}`);
 });
