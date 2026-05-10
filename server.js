@@ -5,7 +5,6 @@ const cors = require('cors');
 
 const app = express();
 
-// THIS IS THE LINE THAT WAS MISSING:
 const port = process.env.PORT || 3000;
 
 app.use(cors()); 
@@ -22,10 +21,26 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
-// Route: List Schools
+// Route: List Schools (Sorted by Proximity)
 app.get('/listSchools', async (req, res) => {
     try {
-        const [rows] = await pool.execute('SELECT * FROM schools');
+        const userLat = parseFloat(req.query.latitude);
+        const userLon = parseFloat(req.query.longitude);
+
+        // Validation: Ensure the user provided their location
+        if (isNaN(userLat) || isNaN(userLon)) {
+            return res.status(400).json({ error: 'Please provide valid latitude and longitude in the URL.' });
+        }
+
+        // The Haversine formula in SQL to calculate distance in kilometers
+        const query = `
+            SELECT id, name, address, latitude, longitude,
+            ( 6371 * acos( cos( radians(?) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(?) ) + sin( radians(?) ) * sin( radians( latitude ) ) ) ) AS distance
+            FROM schools
+            ORDER BY distance ASC
+        `;
+        
+        const [rows] = await pool.execute(query, [userLat, userLon, userLat]);
         res.status(200).json(rows);
     } catch (error) {
         console.error("Database error:", error);
