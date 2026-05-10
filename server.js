@@ -1,13 +1,12 @@
 require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2/promise');
+const cors = require('cors'); // <--- ADD THIS LINE
 
 const app = express();
-
-// RENDER FIX: Use the port Render gives us, or default to 3000
-const port = process.env.PORT || 3000;
-
+app.use(cors()); // <--- ADD THIS LINE (This allows anyone to fetch your data)
 app.use(express.json());
+// ... the rest of your code stays the same
 
 // Database connection pool using the same logic as your setup.js
 const pool = mysql.createPool({
